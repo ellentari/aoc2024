@@ -29,21 +29,29 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
   def upFrom(row: Int, limit: Int): Range = upFrom(row).take(limit)
   def upFrom(index: Index): IndexedSeq[Index] = upFrom(index.row).map(r => Index(r, index.column))
   def upFrom(index: Index, limit: Int): IndexedSeq[Index] = upFrom(index.row, limit).map(r => Index(r, index.column))
+  def upFromWhile(index: Index, p: A => Boolean): IndexedSeq[Index] =
+    upFrom(index.row).view.map(Index(_, index.column)).takeWhile(i => p(apply(i))).toIndexedSeq
 
   def downFrom(row: Int): Range = row until height
   def downFrom(row: Int, limit: Int): Range = downFrom(row).take(limit)
-  def downFrom(index: Index): IndexedSeq[Index] = downFrom(index.row).map(r => Index(r, index.column))
-  def downFrom(index: Index, limit: Int): IndexedSeq[Index] = downFrom(index.row, limit).map(r => Index(r, index.column))
+  def downFrom(index: Index): IndexedSeq[Index] = downFrom(index.row).map(Index(_, index.column))
+  def downFrom(index: Index, limit: Int): IndexedSeq[Index] = downFrom(index.row, limit).map(Index(_, index.column))
+  def downFromWhile(index: Index, p: A => Boolean): IndexedSeq[Index] =
+    downFrom(index.row).view.map(Index(_, index.column)).takeWhile(i => p(apply(i))).toIndexedSeq
 
   def leftFrom(col: Int): Range = col to 0 by -1
   def leftFrom(col: Int, limit: Int): Range = leftFrom(col).take(limit)
-  def leftFrom(index: Index): IndexedSeq[Index] = leftFrom(index.column).map(c => Index(index.row, c))
-  def leftFrom(index: Index, limit: Int): IndexedSeq[Index] = leftFrom(index.column, limit).map(c => Index(index.row, c))
+  def leftFrom(index: Index): IndexedSeq[Index] = leftFrom(index.column).map(Index(index.row, _))
+  def leftFrom(index: Index, limit: Int): IndexedSeq[Index] = leftFrom(index.column, limit).map(Index(index.row, _))
+  def leftFromWhile(index: Index, p: A => Boolean): IndexedSeq[Index] =
+    leftFrom(index.column).view.map(Index(index.row, _)).takeWhile(i => p(apply(i))).toIndexedSeq
 
   def rightFrom(col: Int): Range = col until width
   def rightFrom(col: Int, limit: Int): Range = rightFrom(col).take(limit)
-  def rightFrom(index: Index): IndexedSeq[Index] = rightFrom(index.column).map(c => Index(index.row, c))
-  def rightFrom(index: Index, limit: Int): IndexedSeq[Index] = rightFrom(index.column, limit).map(c => Index(index.row, c))
+  def rightFrom(index: Index): IndexedSeq[Index] = rightFrom(index.column).map(Index(index.row, _))
+  def rightFrom(index: Index, limit: Int): IndexedSeq[Index] = rightFrom(index.column, limit).map(Index(index.row, _))
+  def rightFromWhile(index: Index, p: A => Boolean): IndexedSeq[Index] =
+    rightFrom(index.column).view.map(Index(index.row, _)).takeWhile(i => p(apply(i))).toIndexedSeq
 
   def diagonalRightDownFrom(index: Index): IndexedSeq[Index] =
     downFrom(index.row).zip(rightFrom(index.column)).map(Index.apply.tupled)
@@ -65,9 +73,18 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
   def diagonalLeftUpFrom(index: Index, limit: Int): IndexedSeq[Index] =
     upFrom(index.row, limit).zip(leftFrom(index.column, limit)).map(Index.apply.tupled)
 
+  def indicesFromWhile(index: Index, direction: Direction, p: A => Boolean): IndexedSeq[Index] = direction match
+    case Direction.South => upFromWhile(index, p)
+    case Direction.North => downFromWhile(index, p)
+    case Direction.East => rightFromWhile(index, p)
+    case Direction.West => leftFromWhile(index, p)
+
   def indices: IndexedSeq[Index] = rows.indices.flatMap(row => rows(row).indices.map(Index(row, _)))
   def rowIndices: Range = rows.indices
   def columnIndices: Range = 0 until width
+
+  def isBorder(index: Index): Boolean =
+    index.row == 0 || index.row == height - 1 || index.column == 0 || index.column == width - 1
 
   def bordersIndices: IndexedSeq[Index] =
     (topSideIndices ++ bottomSideIndices ++ rightSideIndices ++ leftSideIndices).distinct
@@ -102,16 +119,8 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
       .filter(isWithinGrid)
       .map(Index.apply.tupled)
 
-  def adjacent(index: Index, direction: Direction): Option[Index] =
-    direction match {
-      case Direction.South => bottom(index)
-      case Direction.North => top(index)
-      case Direction.East => right(index)
-      case Direction.West => left(index)
-    }
-
   def top(index: Index): Option[Index] = {
-    val next = Index(index.row - 1, index.column)
+    val next = index.top
     Option.when(isWithinGrid(next))(next)
   }
 
@@ -119,7 +128,7 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
     (-1 to 1).map(d => Index(index.row - 1, index.column + d)).filter(isWithinGrid).toList
 
   def bottom(index: Index): Option[Index] = {
-    val next = Index(index.row + 1, index.column)
+    val next = index.bottom
     Option.when(isWithinGrid(next))(next)
   }
 
@@ -127,7 +136,7 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
     (-1 to 1).map(d => Index(index.row + 1, index.column + d)).filter(isWithinGrid).toList
 
   def left(index: Index): Option[Index] = {
-    val next = Index(index.row, index.column - 1)
+    val next = index.left
     Option.when(isWithinGrid(next))(next)
   }
 
@@ -135,7 +144,7 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
     (-1 to 1).map(d => Index(index.row + d, index.column - 1)).filter(isWithinGrid).toList
 
   def right(index: Index): Option[Index] = {
-    val next = Index(index.row, index.column + 1)
+    val next = index.right
     Option.when(isWithinGrid(next))(next)
   }
 
@@ -192,7 +201,22 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
 
 object Grid {
 
-  case class Index(row: Int, column: Int)
+  case class Index(row: Int, column: Int) {
+
+    def top: Index = Index(row - 1, column)
+    def bottom: Index = Index(row + 1, column)
+    def left: Index = Index(row, column - 1)
+    def right: Index = Index(row, column + 1)
+
+    def adjacent(direction: Direction): Grid.Index =
+      direction match {
+        case Direction.South => top
+        case Direction.North => bottom
+        case Direction.East => right
+        case Direction.West => left
+      }
+
+  }
 
   def parseCharacterGrid(raw: String): Grid[Char] =
     Grid(raw.split("\n").map(_.toVector).toVector)
