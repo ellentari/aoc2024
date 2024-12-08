@@ -190,7 +190,7 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
   private def isWithinGrid(cc: (Int, Int)) =
     cc._1 >= 0 && cc._1 < rows.length && cc._2 >= 0 && cc._2 < rows(cc._1).length
 
-  private def isWithinGrid(cc: Index): Boolean = isWithinGrid((cc.row, cc.column))
+  def isWithinGrid(cc: Index): Boolean = isWithinGrid((cc.row, cc.column))
 
   def format(rowToString: IndexedSeq[A] => String): String =
     rows.map(rowToString).mkString("\n")
@@ -215,6 +215,9 @@ object Grid {
         case Direction.East => right
         case Direction.West => left
       }
+      
+    def add(dr: Int, dc: Int): Grid.Index = Grid.Index(row + dr, column + dc)  
+    def subtract(dr: Int, dc: Int): Grid.Index = add(-dr, -dc)
 
   }
 
