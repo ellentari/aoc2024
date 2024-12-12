@@ -1,9 +1,25 @@
 package aoc.algo
 
+import aoc.util.Grid
+
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
+import scala.collection.mutable
 
 object BFS {
+
+  def connectedComponents[A](grid: Grid[A])(adjacent: Grid.Index => List[Grid.Index]): List[List[Grid.Index]] = {
+    val seen = mutable.HashSet.empty[Grid.Index]
+    val connectedComponents = mutable.ListBuffer.empty[List[Grid.Index]]
+    for (idx <- grid.indices) {
+      if (!seen.contains(idx)) {
+        val region = discoverRegion(idx)(adjacent)
+        connectedComponents.append(region)
+        seen.addAll(region)
+      }
+    }
+    connectedComponents.toList
+  }
 
   def discoverRegion[A](start: A)(next: A => List[A]): List[A] = {
     @tailrec
@@ -19,7 +35,7 @@ object BFS {
     loop(Queue(start), Set(start), Nil)
   }
 
-  private def visitAll[A](start: A)(next: A => List[A], onVisit: A => Unit): Unit = {
+  def visitAll[A](start: A)(next: A => List[A], onVisit: A => Unit): Unit = {
     @tailrec
     def loop(queue: Queue[A], seen: Set[A]): Unit =
       queue.dequeueOption match {

@@ -207,6 +207,11 @@ object Grid {
     def bottom: Index = Index(row + 1, column)
     def left: Index = Index(row, column - 1)
     def right: Index = Index(row, column + 1)
+    
+    def adjacent4: List[Index] = List(top, right, bottom, left)
+
+    def adjacent4WithDirection: List[(Index, Direction)] = 
+      List(top -> Direction.South, right -> Direction.East, bottom -> Direction.North, left -> Direction.West)
 
     def adjacent(direction: Direction): Grid.Index =
       direction match {
