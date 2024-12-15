@@ -82,6 +82,9 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
   def indices: IndexedSeq[Index] = rows.indices.flatMap(row => rows(row).indices.map(Index(row, _)))
   def rowIndices: Range = rows.indices
   def columnIndices: Range = 0 until width
+  
+  def findIndex(predicate: A => Boolean): Option[Grid.Index] =
+    indices.find(idx => predicate(apply(idx)))
 
   def isBorder(index: Index): Boolean =
     index.row == 0 || index.row == height - 1 || index.column == 0 || index.column == width - 1
@@ -92,6 +95,11 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
   def bottomSideIndices: IndexedSeq[Index] = columnIndices.map(Index(height - 1, _))
   def leftSideIndices: IndexedSeq[Index] = rowIndices.map(Index(_, 0))
   def rightSideIndices: IndexedSeq[Index] = rowIndices.map(Index(_, width - 1))
+  
+  def adjacent(index: Index, direction: Direction): Option[Index] = {
+    val adjacent = index.adjacent(direction)
+    Option.when(isWithinGrid(adjacent))(adjacent)
+  }
 
   def adjacent4(index: Index): List[Index] = adjacent4(index.row, index.column)
   def adjacent4(row: Int, col: Int): List[Index] =
