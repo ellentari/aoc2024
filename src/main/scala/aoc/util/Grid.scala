@@ -74,8 +74,8 @@ case class Grid[A](rows: IndexedSeq[IndexedSeq[A]]) {
     upFrom(index.row, limit).zip(leftFrom(index.column, limit)).map(Index.apply.tupled)
 
   def indicesFromWhile(index: Index, direction: Direction, p: A => Boolean): IndexedSeq[Index] = direction match
-    case Direction.South => upFromWhile(index, p)
-    case Direction.North => downFromWhile(index, p)
+    case Direction.South => downFromWhile(index, p)
+    case Direction.North => upFromWhile(index, p)
     case Direction.East => rightFromWhile(index, p)
     case Direction.West => leftFromWhile(index, p)
 
@@ -207,21 +207,21 @@ object Grid {
     def bottom: Index = Index(row + 1, column)
     def left: Index = Index(row, column - 1)
     def right: Index = Index(row, column + 1)
-    
+
     def adjacent4: List[Index] = List(top, right, bottom, left)
 
-    def adjacent4WithDirection: List[(Index, Direction)] = 
-      List(top -> Direction.South, right -> Direction.East, bottom -> Direction.North, left -> Direction.West)
+    def adjacent4WithDirection: List[(Index, Direction)] =
+      List(top -> Direction.North, right -> Direction.East, bottom -> Direction.South, left -> Direction.West)
 
     def adjacent(direction: Direction): Grid.Index =
       direction match {
-        case Direction.South => top
-        case Direction.North => bottom
+        case Direction.North => top
+        case Direction.South => bottom
         case Direction.East => right
         case Direction.West => left
       }
-      
-    def add(dr: Int, dc: Int): Grid.Index = Grid.Index(row + dr, column + dc)  
+
+    def add(dr: Int, dc: Int): Grid.Index = Grid.Index(row + dr, column + dc)
     def subtract(dr: Int, dc: Int): Grid.Index = add(-dr, -dc)
 
   }

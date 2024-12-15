@@ -23,8 +23,8 @@ object Day6 extends App {
       )
 
     def findObstacleTo(index: Grid.Index, direction: Direction): Option[Grid.Index] = direction match
-      case Direction.South => byColumn.get(index.column).flatMap(_.view.filter(_.row < index.row).maxByOption(_.row))
-      case Direction.North => byColumn.get(index.column).flatMap(_.view.filter(_.row > index.row).minByOption(_.row))
+      case Direction.North => byColumn.get(index.column).flatMap(_.view.filter(_.row < index.row).maxByOption(_.row))
+      case Direction.South => byColumn.get(index.column).flatMap(_.view.filter(_.row > index.row).minByOption(_.row))
       case Direction.East => byRow.get(index.row).flatMap(_.view.filter(_.column > index.column).minByOption(_.column))
       case Direction.West => byRow.get(index.row).flatMap(_.view.filter(_.column < index.column).maxByOption(_.column))
   }
