@@ -236,5 +236,8 @@ object Grid {
 
   def parseCharacterGrid(raw: String): Grid[Char] =
     Grid(raw.split("\n").map(_.toVector).toVector)
+    
+  def fill[A](height: Int, width: Int)(a: => A): Grid[A] =
+    Grid(Vector.fill(height, width)(a)) 
 
 }
