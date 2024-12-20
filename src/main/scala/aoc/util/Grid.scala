@@ -231,6 +231,9 @@ object Grid {
 
     def add(dr: Int, dc: Int): Grid.Index = Grid.Index(row + dr, column + dc)
     def subtract(dr: Int, dc: Int): Grid.Index = add(-dr, -dc)
+    
+    def manhattanDistance(other: Grid.Index): Int =
+      (row - other.row).abs + (column - other.column).abs
 
   }
 
