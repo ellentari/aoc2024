@@ -32,3 +32,8 @@ object Direction:
     case South => East
     case East => North
     case West => South
+    
+  def turns(direction: Direction): List[Direction] = List(
+    turnRight(direction),
+    turnLeft(direction)
+  )

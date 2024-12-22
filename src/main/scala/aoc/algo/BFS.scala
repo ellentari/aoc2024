@@ -73,7 +73,7 @@ object BFS {
     loop(Queue(start), Set(start))
   }
 
-  private def restorePath[A](a: A, parent: A => Option[A]): List[A] = {
+  def restorePath[A](a: A, parent: A => Option[A]): List[A] = {
     @tailrec
     def loop(a: A, acc: List[A]): List[A] =
       parent(a) match {
